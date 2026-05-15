@@ -5,14 +5,14 @@ import {
   fetchStudents,
   updateStudentAsync,
 } from './studentsThunks';
+import { studentsAdapter } from './studentsAdapter';
 
 const studentsSlice = createSlice({
   name: 'students',
-  initialState: {
-    list: [],
+  initialState: studentsAdapter.getInitialState({
     status: 'idle',
     error: null,
-  },
+  }),
   reducers: {},
   extraReducers: (builder) => {
     builder
@@ -22,23 +22,20 @@ const studentsSlice = createSlice({
       })
       .addCase(fetchStudents.fulfilled, (state, action) => {
         state.status = 'succeeded';
-        state.list = action.payload;
+        studentsAdapter.setAll(state, action.payload);
       })
       .addCase(fetchStudents.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.payload ?? action.error.message;
       })
       .addCase(addStudentAsync.fulfilled, (state, action) => {
-        state.list.push(action.payload);
+        studentsAdapter.addOne(state, action.payload);
       })
       .addCase(updateStudentAsync.fulfilled, (state, action) => {
-        const idx = state.list.findIndex((student) => student.id === action.payload.id);
-        if (idx !== -1) {
-          state.list[idx] = action.payload;
-        }
+        studentsAdapter.upsertOne(state, action.payload);
       })
       .addCase(deleteStudentAsync.fulfilled, (state, action) => {
-        state.list = state.list.filter((student) => student.id !== action.payload);
+        studentsAdapter.removeOne(state, action.payload);
       });
   },
 });

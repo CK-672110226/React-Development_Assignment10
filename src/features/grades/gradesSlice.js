@@ -1,25 +1,21 @@
 import { createSlice } from '@reduxjs/toolkit';
+import { gradesAdapter } from './gradesAdapter';
 
 const gradesSlice = createSlice({
   name: 'grades',
-  initialState: {
-    list: [],
-  },
+  initialState: gradesAdapter.getInitialState(),
   reducers: {
     addGrade: (state, action) => {
-      state.list.push({
+      gradesAdapter.addOne(state, {
         id: Date.now(),
         ...action.payload,
       });
     },
     updateGrade: (state, action) => {
-      const i = state.list.findIndex(g => g.id === action.payload.id);
-      if (i !== -1) {
-        state.list[i] = action.payload;
-      }
+      gradesAdapter.upsertOne(state, action.payload);
     },
     deleteGrade: (state, action) => {
-      state.list = state.list.filter(g => g.id !== action.payload);
+      gradesAdapter.removeOne(state, String(action.payload));
     },
   },
 });

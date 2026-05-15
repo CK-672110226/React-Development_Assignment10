@@ -1,6 +1,10 @@
 import { useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { selectAllStudents } from '../features/students/selectors';
+import {
+  makeSelectFilteredStudents,
+  selectStudentCount,
+  selectUniqueStudentMajors,
+} from '../features/students/selectors';
 
 const GPA_FILTERS = [
   { value: 'all', label: 'All GPA' },
@@ -10,44 +14,17 @@ const GPA_FILTERS = [
   { value: 'lt2', label: '< 2.0' },
 ];
 
-function matchesGpaFilter(gpa, filter) {
-  switch (filter) {
-    case 'gte3_5':
-      return gpa >= 3.5;
-    case '3_0_3_49':
-      return gpa >= 3.0 && gpa < 3.5;
-    case '2_0_2_99':
-      return gpa >= 2.0 && gpa < 3.0;
-    case 'lt2':
-      return gpa < 2.0;
-    default:
-      return true;
-  }
-}
-
 function DataExplorerPage() {
-  const students = useSelector(selectAllStudents);
+  const majors = useSelector(selectUniqueStudentMajors);
+  const totalStudents = useSelector(selectStudentCount);
   const [courseFilter, setCourseFilter] = useState('all');
   const [gpaFilter, setGpaFilter] = useState('all');
+  const selectFilteredStudents = useMemo(() => makeSelectFilteredStudents(), []);
+  const filteredStudents = useSelector((state) =>
+    selectFilteredStudents(state, courseFilter, gpaFilter),
+  );
 
-  const courseOptions = useMemo(() => {
-    const uniqueMajors = [...new Set(
-      students
-        .map((student) => (typeof student.major === 'string' ? student.major.trim() : ''))
-        .filter(Boolean),
-    )].sort((a, b) => a.localeCompare(b));
-
-    return ['all', ...uniqueMajors];
-  }, [students]);
-
-  const filteredStudents = useMemo(() => {
-    return students.filter((student) => {
-      const major = typeof student.major === 'string' ? student.major.trim() : '';
-      const passCourse = courseFilter === 'all' || major === courseFilter;
-      const passGpa = matchesGpaFilter(student.gpa, gpaFilter);
-      return passCourse && passGpa;
-    });
-  }, [students, courseFilter, gpaFilter]);
+  const courseOptions = useMemo(() => ['all', ...majors], [majors]);
 
   return (
     <section className="data-explorer">
@@ -79,7 +56,7 @@ function DataExplorerPage() {
       </div>
 
       <div className="explorer-meta">
-        Showing {filteredStudents.length} of {students.length} students
+        Showing {filteredStudents.length} of {totalStudents} students
       </div>
 
       {filteredStudents.length === 0 ? (

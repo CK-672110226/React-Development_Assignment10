@@ -6,19 +6,29 @@ import {
   selectHighAchievers,
   selectStudentById,
   selectStudentCount,
+  selectStudentsIds,
   selectStudentsError,
   selectStudentsStatus,
+  selectUniqueStudentMajors,
+  makeSelectFilteredStudents,
 } from './selectors';
+
+const students = [
+  { id: '1', name: 'A', studentId: '6501', major: 'CS', gpa: 3.8 },
+  { id: '2', name: 'B', studentId: '6502', major: 'IT', gpa: 3.2 },
+  { id: '3', name: 'C', studentId: '6503', major: 'CS', gpa: 3.5 },
+];
 
 const mockState = {
   students: {
+    ids: ['1', '2', '3'],
+    entities: {
+      1: students[0],
+      2: students[1],
+      3: students[2],
+    },
     status: 'succeeded',
     error: null,
-    list: [
-      { id: 1, name: 'A', studentId: '6501', major: 'CS', gpa: 3.8 },
-      { id: 2, name: 'B', studentId: '6502', major: 'IT', gpa: 3.2 },
-      { id: 3, name: 'C', studentId: '6503', major: 'CS', gpa: 3.5 },
-    ],
   },
 };
 
@@ -32,7 +42,11 @@ describe('students selectors', () => {
   });
 
   it('selectAllStudents returns student list', () => {
-    expect(selectAllStudents(mockState)).toEqual(mockState.students.list);
+    expect(selectAllStudents(mockState)).toEqual(students);
+  });
+
+  it('selectStudentsIds returns student ids', () => {
+    expect(selectStudentsIds(mockState)).toEqual(['1', '2', '3']);
   });
 
   it('selectStudentCount returns total students', () => {
@@ -54,6 +68,15 @@ describe('students selectors', () => {
   });
 
   it('selectStudentById returns matching student', () => {
-    expect(selectStudentById(2)(mockState)).toEqual(mockState.students.list[1]);
+    expect(selectStudentById(mockState, '2')).toEqual(students[1]);
+  });
+
+  it('selectUniqueStudentMajors returns sorted unique majors', () => {
+    expect(selectUniqueStudentMajors(mockState)).toEqual(['CS', 'IT']);
+  });
+
+  it('makeSelectFilteredStudents returns filtered matches for explorer view', () => {
+    const selectFilteredStudents = makeSelectFilteredStudents();
+    expect(selectFilteredStudents(mockState, 'CS', 'gte3_5')).toEqual([students[0], students[2]]);
   });
 });

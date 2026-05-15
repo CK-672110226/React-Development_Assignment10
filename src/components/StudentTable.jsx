@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import EditModal from './EditModal';
 import {
-  selectAllStudents,
+  selectStudentIds,
   selectStudentsError,
   selectStudentsStatus,
 } from '../features/students/selectors';
@@ -12,13 +12,14 @@ import {
   fetchStudents,
   updateStudentAsync,
 } from '../features/students/studentsThunks';
+import StudentRow from './StudentRow';
 
 function StudentTable() {
   const dispatch = useDispatch();
-  const students = useSelector(selectAllStudents);
+  const studentIds = useSelector(selectStudentIds);
   const status = useSelector(selectStudentsStatus);
   const error = useSelector(selectStudentsError);
-  const [editing, setEditing] = useState(null);
+  const [editingStudentId, setEditingStudentId] = useState(null);
   const [majorOptions, setMajorOptions] = useState([]);
 
   useEffect(() => {
@@ -37,11 +38,15 @@ function StudentTable() {
     };
   }, []);
 
-  function handleDelete(id) {
+  const handleDelete = useCallback((id) => {
     if (window.confirm('Delete this student?')) {
       dispatch(deleteStudentAsync(id));
     }
-  }
+  }, [dispatch]);
+
+  const handleEdit = useCallback((id) => {
+    setEditingStudentId(id);
+  }, []);
 
   async function handleEditSave(updatedData) {
     if (!updatedData.name.trim() || !updatedData.studentId.trim()) {
@@ -63,7 +68,7 @@ function StudentTable() {
         major: normalizedMajor,
         gpa: gpaNum,
       })).unwrap();
-      setEditing(null);
+      setEditingStudentId(null);
     } catch {
       // Keep modal open so user can retry after a transient API error.
     }
@@ -88,7 +93,7 @@ function StudentTable() {
     return null;
   }
 
-  if (students.length === 0) {
+  if (studentIds.length === 0) {
     return <p className="empty-state">No students yet. Add one above!</p>;
   }
 
@@ -106,33 +111,24 @@ function StudentTable() {
           </tr>
         </thead>
         <tbody>
-          {students.map((student, index) => (
-            <tr key={student.id} className={student.gpa >= 3.5 ? 'high-gpa' : ''}>
-              <td>{index + 1}</td>
-              <td>{student.name}</td>
-              <td>{student.studentId}</td>
-              <td>{student.major}</td>
-              <td className={`gpa-cell ${student.gpa >= 3.5 ? 'gpa-high' : 'gpa-normal'}`}>
-                {student.gpa.toFixed(2)}
-              </td>
-              <td>
-                <button className="btn-edit" onClick={() => setEditing(student)}>
-                  Edit
-                </button>{' '}
-                <button className="btn-delete" onClick={() => handleDelete(student.id)}>
-                  Delete
-                </button>
-              </td>
-            </tr>
+          {studentIds.map((studentId, index) => (
+            <StudentRow
+              key={studentId}
+              studentId={studentId}
+              rowNumber={index + 1}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
           ))}
         </tbody>
       </table>
-      {editing && (
+      {editingStudentId && (
         <EditModal
-          student={editing}
+          key={editingStudentId}
+          studentId={editingStudentId}
           majorOptions={majorOptions}
           onSave={handleEditSave}
-          onCancel={() => setEditing(null)}
+          onCancel={() => setEditingStudentId(null)}
         />
       )}
     </>

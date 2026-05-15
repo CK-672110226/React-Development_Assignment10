@@ -19,7 +19,7 @@ Date: 7 May 2026 (7 พฤษภาคม 2569)
 
 - Assignment 4 (Lab 4): `HistoryVersions/Assignment4/`
   - Assignment index: `HistoryVersions/Assignment4/INDEX.md`
-  - Canonical chain: `Assignment4.00.md` to `Assignment4.08.md`
+  - Canonical chain: `Assignment4.00.md` to `Assignment4.10.md`
 
 ## Legacy Archives (Non-Canonical)
 

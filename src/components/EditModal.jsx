@@ -1,13 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { selectStudentById } from '../features/students/selectors';
 
-function EditModal({ student, majorOptions = [], onSave, onCancel }) {
-  const [form, setForm] = useState({ ...student });
+function EditModal({ studentId, majorOptions = [], onSave, onCancel }) {
+  const student = useSelector((state) => selectStudentById(state, studentId));
+  const [form, setForm] = useState(() => (student ? { ...student } : null));
   const [error, setError] = useState('');
   const nameInputRef = useRef(null);
 
   useEffect(() => {
     nameInputRef.current?.focus();
-  }, []);
+  }, [student]);
 
   useEffect(() => {
     function handleEscClose(event) {
@@ -37,6 +40,10 @@ function EditModal({ student, majorOptions = [], onSave, onCancel }) {
     }
 
     onSave({ ...form, gpa: gpaNum });
+  }
+
+  if (!student || !form) {
+    return null;
   }
 
   return (

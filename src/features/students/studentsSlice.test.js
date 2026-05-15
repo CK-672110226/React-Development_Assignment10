@@ -13,7 +13,8 @@ describe('studentsSlice reducer', () => {
 
     expect(state.status).toBe('idle');
     expect(state.error).toBeNull();
-    expect(state.list).toEqual([]);
+    expect(state.ids).toEqual([]);
+    expect(state.entities).toEqual({});
   });
 
   it('handles fetchStudents pending and clears previous errors', () => {
@@ -33,7 +34,10 @@ describe('studentsSlice reducer', () => {
 
   it('handles fetchStudents fulfilled by replacing list', () => {
     const previous = {
-      list: [{ id: 'old-1', name: 'Old', studentId: '000', major: 'Old', gpa: 2.0 }],
+      ids: ['old-1'],
+      entities: {
+        'old-1': { id: 'old-1', name: 'Old', studentId: '000', major: 'Old', gpa: 2.0 },
+      },
       status: 'loading',
       error: null,
     };
@@ -48,7 +52,8 @@ describe('studentsSlice reducer', () => {
     });
 
     expect(next.status).toBe('succeeded');
-    expect(next.list).toEqual(payload);
+    expect(next.ids).toEqual(['1', '2']);
+    expect(next.entities['1']).toEqual(payload[0]);
   });
 
   it('handles fetchStudents rejected', () => {
@@ -69,7 +74,10 @@ describe('studentsSlice reducer', () => {
 
   it('handles addStudentAsync fulfilled', () => {
     const previous = {
-      list: [{ id: '1', name: 'A', studentId: '6501', major: 'CS', gpa: 3.1 }],
+      ids: ['1'],
+      entities: {
+        '1': { id: '1', name: 'A', studentId: '6501', major: 'CS', gpa: 3.1 },
+      },
       status: 'succeeded',
       error: null,
     };
@@ -86,13 +94,16 @@ describe('studentsSlice reducer', () => {
       payload,
     });
 
-    expect(next.list).toHaveLength(2);
-    expect(next.list.at(-1)).toEqual(payload);
+    expect(next.ids).toHaveLength(2);
+    expect(next.entities['2']).toEqual(payload);
   });
 
   it('handles updateStudentAsync fulfilled', () => {
     const previous = {
-      list: [{ id: '1', name: 'A', studentId: '6501', major: 'CS', gpa: 3.1 }],
+      ids: ['1'],
+      entities: {
+        '1': { id: '1', name: 'A', studentId: '6501', major: 'CS', gpa: 3.1 },
+      },
       status: 'succeeded',
       error: null,
     };
@@ -108,16 +119,17 @@ describe('studentsSlice reducer', () => {
       },
     });
 
-    expect(next.list[0].name).toBe('Updated Name');
-    expect(next.list[0].gpa).toBe(3.9);
+    expect(next.entities['1'].name).toBe('Updated Name');
+    expect(next.entities['1'].gpa).toBe(3.9);
   });
 
   it('handles deleteStudentAsync fulfilled', () => {
     const previous = {
-      list: [
-        { id: '1', name: 'A', studentId: '6501', major: 'CS', gpa: 3.1 },
-        { id: '2', name: 'B', studentId: '6502', major: 'IT', gpa: 3.6 },
-      ],
+      ids: ['1', '2'],
+      entities: {
+        '1': { id: '1', name: 'A', studentId: '6501', major: 'CS', gpa: 3.1 },
+        '2': { id: '2', name: 'B', studentId: '6502', major: 'IT', gpa: 3.6 },
+      },
       status: 'succeeded',
       error: null,
     };
@@ -127,7 +139,8 @@ describe('studentsSlice reducer', () => {
       payload: '1',
     });
 
-    expect(next.list).toHaveLength(1);
-    expect(next.list[0].id).toBe('2');
+    expect(next.ids).toHaveLength(1);
+    expect(next.entities['1']).toBeUndefined();
+    expect(next.entities['2'].id).toBe('2');
   });
 });

@@ -1,4 +1,5 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
+import { selectAllStudents } from './selectors';
 
 const STUDENTS_API_URL = import.meta.env.VITE_STUDENTS_API_URL;
 const COURSES_API_URL = import.meta.env.VITE_COURSES_API_URL;
@@ -149,7 +150,7 @@ export const fetchStudents = createAsyncThunk(
   async (_, { getState, rejectWithValue }) => {
     try {
       const majors = await fetchMajorsFromCoursesApi();
-      const currentStudents = getState().students.list;
+      const currentStudents = selectAllStudents(getState());
 
       if (shouldUseLocalFallback()) {
         return readLocalStudents().map((student) =>
